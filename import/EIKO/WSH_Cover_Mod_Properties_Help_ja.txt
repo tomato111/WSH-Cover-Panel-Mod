@@ -1,0 +1,308 @@
+﻿■概要━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//This is a japanese help. I cannot make an english help. sorry.//
+WSH Cover Panel Mod は, "Album Covers buttons to switch" （http://bit.ly/qmiDCv）
+をさらに多機能にしようと改変した WSH Panel Mod 用スクリプトです.
+動作確認は以下のもので行っています.
+http://code.google.com/p/foo-wsh-panel-mod/downloads/list
+
+[本家様の主な機能]
+ ・埋め込み画像の表示(mp3, m4a, ogg, flac, tak, mka等々)
+ ・指定フォルダ内画像の表示（jpg, png, gif, bmp）
+	パスは複数指定でき, Title Formatting の他にワイルドカードが使用可
+ ・キャッシュ機能による高いパフォーマンス
+ ・背景の透過（パネルの機能として）
+	Shift+右クリック -> Configuration の「Presudo Transparent」をON
+	
+----------------------------------------------------------------------
+--Mod公開-----------------------------------------------------------
+ ・メニューの日本語ローカライズ, jaヘルプの同梱
+ ・画像の上にケース画像を重ねる機能の追加
+ ・外部ビューアの指定,マージンの指定, の追加. それといくつか仕様変更
+ ・プロパティダイアログを更新時に画像（パス）を見失う問題の修正
+ ・Buttons.Position が効かない問題の修正
+ 
+--v1.01更新(2010/12/25)-----------------------------------------------
+ ・相対的にサイズ調整したケースがパネルからはみ出さないようにする設定の
+  Case.AdjustCaseSizeInsidePanel を追加
+
+--v1.02更新(2011/01/07)-----------------------------------------------
+ ・Panel.BackGroundColor と Panel.ExternalViewer がプロパティに作られない不具合を修正
+
+--v1.03更新(2011/02/10)-----------------------------------------------
+ ・初期値に不適当な値が入る可能性が一箇所あったので修正
+ ・「埋込み画像上で外部ビューアへ渡そうとした時」の動作に関する設定の Image.EmbedImageSubstitutedPath　を追加
+ ・右クリックメニューに"Configure..."を追加する設定の Panel.ShowConfigureMenu を追加
+ 
+--v1.04更新(2011/02/17)-----------------------------------------------
+ ・左ダブルクリック時 と ミドル（ホイール）クリック時 の動作を指定できる
+  Panel.LeftButtonDoubleClick　と Panel.MiddleButtonClick を追加
+  
+--v1.05更新(2011/02/27)-----------------------------------------------
+ ・Image.MaxFileSize の初期値が2MBと小さすぎていたので5MB(5242880byte)に変更
+ ・Image.InterpolationMode と SmoothingMode の初期値変更
+ ・Image.DefaultImagePath と Case.CaseImagePath がプロパティに作られない不具合を修正
+ ・左クリック時の動作を指定できる Panel.LeftButtonClick を追加
+ ・上記などのクリックアクションで Follow cursor を切り替えたときにツールチップを表示するようにした
+ ・クリックアクションに指定できるコマンドをいくつか追加
+ ・クリックアクションで実行出来る Panel.RunCommand と Panel.RunContextCommand を追加
+ ・背景画像を設定できる　Panel.BackgroundImage　とその設定 Panel.BackgroundImgOption
+  を追加
+
+--v1.06更新(2011/03/13)-----------------------------------------------
+ ・Panel.language の初期値はユーザー環境変数のLANGから推測するようにした（ないならダイアログ表示）
+ ・クリックアクションで指定できるコマンドをいくつか追加
+ ・ShiftキーやCtrlキーを組み合わせたマウスクリックに動作を割り当てられるようにした
+	既存のスクリプトを更新した場合は, 以下の3つを"Delete"して初期化する必要があります.
+	Panel.LeftButtonClick, Panel.LeftButtonDoubleClick, Panel.MiddleButtonClick
+ ・ケースにも回転と透明度のオプション追加 Case.ImageOption
+ 
+--v1.07更新(2011/06/21)-----------------------------------------------
+ ・パネルに音楽ファイルやプレイリスト内アイテム等をドラッグ&ドロップした時に, 任意の名前のプレイリストへ追加できるようにした
+  それに伴い, 設定 _DragDropPlaylistName と _DragDropToSelect を追加
+  
+--v1.08更新(2011/07/18)-----------------------------------------------
+ ・画像の表示順をシャッフルできるようにした(Cycle.Shuffleを追加)
+ 
+--v1.09更新(2011/07/19)-----------------------------------------------
+ ・表示している画像を削除できるようにした(右クリックメニューから実行orクリックアクションで20を指定)
+	埋込み画像やデフォルト画像、読み取り専用は削除できません.
+
+--v1.10更新(2011/08/19)-----------------------------------------------
+ ・画像削除の不具合修正
+ 
+--v1.11更新(2011/11/24)-----------------------------------------------
+ ・RunCommandで"()"括弧を用いたTFが使えなかった不具合を修正
+	TF以外の括弧は'(' ')'のようにシングルクォートで括ってください.
+----------------------------------------------------------------------
+
+■インストール━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+※ケース画像を使う場合は各自用意し、case.png としてimport\EIKO\フォルダへ入れてください
+ 1. import フォルダを foobar2000 のインストールフォルダへ移動 (ex. C:\Program Files\foobar2000\import\～)
+ 2. Preferences -> Tools -> WSH Panel Mod で"Safe mode"のチェックを外す
+ 3. WSH Panel Mod パネルで WSH Cover Panel Mod.txt をインポートするか中身を張り付ける
+
+
+■操作━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 左クリック：何もしない （設定で動作割り当て可）
+ 左ダブルクリック：何もしない （設定で動作割り当て可）
+ 右クリック：メニュー表示
+ ホイールクリック：既定or指定のビューアで画像を開く （設定で動作変更可）
+ ホイールアップ：前の画像
+ ホイールダウン：次の画像
+
+
+■右クリックメニュー━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 更新 (Refresh image)：現在のパスの画像を更新する. パス等新たに検索されない
+ キャッシュの削除 (Clear Cache)：
+	メモリ上からすべての画像およびパスのキャッシュを削除する. そしてもう一度パスをスキャンし,
+	読み込み直す. 画像に変更を加えた場合などに行えば, 読み込み直してくれる
+ ヘルプ... (Help...)：このテキストファイルを表示する (WSH Cover Panel Mod で表示方法を変更した)
+
+
+■設定（Properties）━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+※プロパティを初期化するには Delete（一行）や Clear（全部）の後, Apply で行えます
+※WSH Cover Panel Mod で追加したプロパティには★がついています
+※TitleFormattingを記述可能な場所で、TitleFormatting以外の括弧は、'(' ')'のように
+  それぞれシングルクォートで括ってください
+
+--アイテムドロップ関係-----------------------------------
+
+ ★_DragDropPlaylistName
+		パネルへドロップしたアイテムをプレイリストへ登録する際の名前. 初期値では Dropped Items という名前のプレイリストへ次々追加される（なければ作成される）
+		TitleFormatting を使った動的作成も可能.(ex. Dropped %genre%)
+		空欄にした場合, Dropする度にプレイリストが新規作成される.その際の名前は自動的に連番で付けられる
+　★_DragDropToSelect
+		最後に追加したアイテムを選択状態にするならTrue
+
+--コントロールボタン関係-----------------------------------
+
+ ○Buttons.Display
+		マウスオーバー時にコントロールボタンを表示するならTrue
+ ○Buttons.Position
+		コントロールボタンの表示場所を0～5で指定
+		0:左上, 1:真ん中上, 2:右上, 3:左下, 4:真ん中下, 5:右下
+
+		
+--ケース関係-----------------------------------------------
+
+ ★Case.ActiveCaseMode
+		ケース画像を表示するならTrue （ケースは表示画像と同じ大きさにリサイズされ表示される）
+ ★Case.AdjustCaseSize
+		ケースの大きさを相対的に調整できる. 書式は【left,up,right,down】とカンマで区切り, (ex. 15,15,15,15)
+		それぞれ対応した方向に各数値分だけケース画像を引き伸ばせる
+ ★Case.AdjustCaseSizeInsidePanel
+		サイズ調整したケースがパネルからはみ出さないようにするならTrue. 上の相対リサイズにおいて
+		ケースがパネルサイズより大きくならないようにする.なのでケースは見切れなくなるが、画像によって相対値通りの表示とはいかなくなる
+ ★Case.CaseImagePath
+		ケース画像のパスを記述. 特に指定しなければワークディレクトリ直下の case.png が使用される
+		※フルパスではなく import\～ や ～.png とだけ書いた場合, 「Foobarインストールフォルダ\import\～」 のように扱われます
+ ★Case.fixSizeMode
+		ケースの大きさを固定したいならTrue. その場合Case.AdjustCaseSizeは無効になり, Case.fixSizeValueが有効になる
+ ★Case.fixSizeValue
+		固定モード時にどこにどの大きさで表示するかを記述. 書式は【x,y,w,h】とカンマで区切り, (ex. 5,5,250,210)
+		左上の座標（x,y）と, 横幅w, 高さh を指定する. 数値以外に, 横幅と高さにだけパネル幅 ww とパネルの高さ wh が使用可能. 
+ ★Case.ImageOption
+		ケースの角度と透明度. 書式は【rot,alpha】とカンマで区切って記述. rotは回転角度, alphaは透明度(0~255)
+
+		
+--画像のサイクル関係---------------------------------------
+
+ ○Cycle.Animation.Duration
+		アニメーションの時間. 単位は[ms]
+ ○Cycle.Animation.Enable
+		サイクルするときにアニメーションさせるならTrue. そのアニメーション中は若干CPU使用率が上がる
+ ○Cycle.Animation.RefreshInterval
+		Animation refresh interval. Milliseconds.
+ ○Cycle.AutoPauseWhenFollowCursor
+		FollowCursor で画像を表示する時はオートサイクルを自動的に停止させる
+ ○Cycle.CycleInWildCard
+		ワイルドカードでマッチしたすべての画像を表示(サイクル可能に)するならTrue 
+		Falseの場合, ワイルドカードでマッチした最初の画像１枚のみを表示する
+ ○Cycle.Enable
+		サイクル機能を使用するならTrue （Falseにすると手動でも一切サイクルできなくなる）
+ ○Cycle.Paused
+		オートサイクルを一時停止させるならTrue （右クリックメニューやコントロールボタンから切り替え可なのであえてここで設定する必要はない）
+ ○Cycle.Period
+		画像をオートサイクルさせる時間. 単位は[ms]
+ ★Cycle.Shuffle
+		画像の表示順をシャッフルさせる. 何枚目からシャッフルさせるか記述する.
+		0: しない, 1: 1枚目からシャッフル, 2: 2枚目からシャッフル, 3: 3枚目からシャッフル, ...
+		
+		
+--表示画像関係---------------------------------------------
+
+ ★Image.AdjustMargin
+		画像はパネルサイズにリサイズされるが, ここで上下左右に余白を設定できる. 書式は【left,top,right,bottom】とカンマで区切り,
+		最低限の余白を指定する(ex. 7,7,7,7). なのでアスペクト比維持等で数値以上の余白ができる場合は変化はない
+ ○Image.DefaultImagePath
+		表示画像がないときに表示する画像のパスを記述. 特に指定しなければワークディレクトリ直下の nocover.png が使用される
+		※フルパスではなく import\～ や ～.png とだけ書いた場合, 「Foobarインストールフォルダ\～.png」 のように扱われます
+ ★Image.EmbedImageSubstitutedPath
+        埋込み画像は外部ビューアへ渡せないが, ここに画像パスを記述することで代わりにその画像を表示する. ※パスは一つだけ, ワイルドカードは不可
+		ex. 音楽ファイルと同じ場所に[アルバム名.jpg]がありそれを表示する場合, $directory_path(%path%)\%album%.jpg
+ ○Image.GroupFormat
+		Grouping keywords. Title formatting script can be used. Group for the song files on packet, switch to the new file, the more this keyword, different groups are considered as new. Switch in the same group file, the image circle will not be interrupted or reset.
+ ○Image.ImageCacheCapacity
+		Image cache capacity. Units of the number of sheets. Image scaling to fit panel is then cached, so this value should be combined with your panel size, if a larger panel, you should set the less, if smaller, you can set more. 0 or -1 to disable.
+ ○Image.InterpolationMode
+		Image interpolation algorithm model　の品質を設定. つまり, リサイズ時の補間法のアルゴリズムを指定. -1～7で記述する
+		詳しくは http://msdn.microsoft.com/en-us/library/ms534141(VS.85).aspx または「InterpolationMode」で検索
+		とりあえず7の高品質双三次補間が高品質だが, 処理も増える
+		   -1: Invalid
+			0: Default
+			1: LowQuality
+			2: HighQuality
+			3: Bilinear
+			4: Bicubic
+			5: NearestNeighbor
+			6: HighQualityBilinear
+			7: HighQualityBicubic
+ ○Image.KeepAspectRatio
+		リサイズ時にアスペクト比を維持するならTrue （右クリックメニューから設定できるのであえてここで設定する必要はない）
+ ○Image.MaxFileSize
+		画像の最大ファイルサイズを指定. 単位は[byte]. これ以上のファイルサイズのものは読み込まない
+		※初期値は5MB(5242880byte)です.　特定の画像が表示されない場合はファイルサイズを疑ってみてください
+ ○Image.PathCacheCapacity
+		Path cache capacity. The number of units group. Shall SourceFormat cache search results, a string of search results as a set. This panel only cache the string, so this value can be set larger. 0 or -1 to disable.
+ ○Image.SmoothingMode
+		Image smoothing model の品質を設定. つまり, 描画時のアンチエイリアス（スムージング）の指定. -1～4で記述する
+		詳しくは http://msdn.microsoft.com/en-us/library/ms534173(VS.85).aspx または「SmoothingMode」で検索
+		アンチエイリアスが掛かるのは2か4で, この二つに明確な違いはない模様. 一応ボックスフィルターのサイズが 8x4 と 8x8 とで異なるが違いは感じられない
+		   -1: Invalid
+			0: Default
+			1: HighSpeed
+			2: HighQuality
+			3: None
+			4: AntiAlias
+ ○Image.SourceFormat	
+		表示画像のパスを指定. Title formatting の他にワイルドカードも使用可能
+		パスを複数指定する場合は"||"で区切って指定する
+		埋込み画像を表示したい場合は"<embed>"を指定する
+		パネルは始めにTFを評価してからセグメント記号"||" and "<>" を探すので,
+		例えば $if(%artist%,||E:\MusicPic\%artist%\*.*) というようなTF範囲内に"||"を含むスクリプトも使える
+		ex. <embed>||$directory_path(%path%)\folder.jpg||$replace(%path%,%filename_ext%,)back.*||D:\Music\ArtistPic\%artist%\*.*
+ ○Image.Stretch
+		パネルより縦横が小さい画像をパネル一杯まで引き伸ばす場合はTrue　（右クリックメニューから設定できるのであえてここで設定する必要はない）
+
+		
+--パネル関係-----------------------------------------------
+
+ ○Panel.BackGroundColor
+		パネルの背景色. RGB や RGBA が使用可能で, 書式は【r,g,b】や【r,g,b,a】のようにカンマで区切る. (ex. 200,150,100,80)
+ ★Panel.BackgroundImage
+		背景画像が設定可能. ファイルパス(TF不可)を一つ記述
+ ★Panel.BackgroundImgOption
+		背景画像のオプション. 書式は【x,y,w,h,rot,alpha,ratio】とカンマで区切って記述. 初期値のww,whはそれぞれパネル幅と高さを表す
+		座標(x,y),幅w,高さh, rotは回転角度, alphaは透明度(0~255), ratioはアスペクト比を維持するなら"1" しないなら"0"を指定
+		アスペクト比を維持した場合, 高さhは自動的に計算された値になり, ww や wh は具体的な数値に展開されて格納される
+ ★Panel.ExternalViewer
+		外部ビューアをフルパスで指定. 特に指定しなければ既定の関連付けアプリとなる
+		起動は右クリックメニューのほか, 設定でミドルクリックや左ダブルクリックから起動できる. 埋め込み画像は表示できないが, その場合 Image.EmbedImageSubstitutedPath を代わりに表示可能
+ ○Panel.FollowCursor
+		Follow cursor mode の設定. 0～2を指定してモードを切り替える （右クリックメニューから設定できるのであえてここで設定する必要はない）
+ ○Panel.Language
+		右クリックメニューの言語の指定. en なら英語, ja なら日本語になる. この2つだけサポート
+ ★Panel.LeftButtonClick
+ 		左クリック時の動作を指定. 書式は【normal,+shift,+ctrl】とカンマで区切って, それぞれ0～19で記述する. (ex. 4,0,15)
+		shift と ctrl キーを同時に押下した場合はnormalの動作になる
+			0: 何もしない (none)
+			1: 外部ビューアで開く (View with external viewer)
+			2: 表示画像のフォルダを開く (Open containing folder)
+			3: Follow Cursor Mode の「非再生時のみカーソルを追従」と「常にカーソルを追従」を切り替え　(Toggle: Only when not playing ←→ Always)
+			4: 設定（プロパティ）を開く (Show "Properties")
+			5: ヘルプを開く (Open help file)
+			6: 最初の画像を表示 (Show FirstImage)
+			7: 最後の画像を表示 (Show LastImage)
+			8: 音楽再生or一時停止 (PlayOrPause)
+            9: 音楽停止 (Stop)
+            10: ランダムで一曲選んで再生 (Random)
+            11: ミュート (VolumeMute)
+            12: Panel.RunCommand で指定したメインメニューor外部コマンドを実行 (RunMainMenuCommand)
+            13: Panel.RunContextCommand で指定したコンテキストメニューコマンドを実行 (RunContextCommand follow CursorMode)
+            14: foobarの設定を開く (ShowPreferences)
+			15: パネルのConfigureを開く (Show "Configure")
+			16: foobarのユーザーフォルダを開く (Open user profile directory)
+			17: foobarのインストールフォルダを開く (Open foobar install directory)
+			18: 次のプレイリストを開く (Next Playlist)
+			19: 前のプレイリストを開く (Previous Playrist)
+			20: 現在の画像を削除する (Delete Current Image) ※埋込み画像や読み取り専用は削除できません。
+ ★Panel.LeftButtonDoubleClick
+		左ダブルクリック時の動作を指定. 記述は上記を参照. ※左クリックの動作も実行されるので注意
+ ★Panel.MiddleButtonClick
+		ミドルクリック時の動作を指定. 記述は上記を参照
+ ★Panel.RunCommand
+		メインメニューのコマンドを登録. クリックアクションで実行出来る. 階層はスラッシュ"/"を使う. (ex. View/Playlist Manager)
+		また, 階層に"\"を使うと外部コマンドを実行出来る (ex. C:\windows\notepad.exe)
+		Panel.ExternalViewer と違い, フルパスの後ろに"半角スペース"で区切って引数(TF可)を指定出来る
+		(ex. メモ帳で D:\Music\(アルバムアーティスト名).txt を開き, なければ新規作成 を行う場合,
+			C:\windows\notepad.exe D:\Music\%album artist%.txt
+		)
+ ★Panel.RunContextCommand
+		曲の右クリックメニューのコマンドを登録. クリックアクションで実行出来る. 対象は Follow Cursor Mode に従う
+		(ex. Properties) (ex2. Utilities/Edit cuesheet) (ex3. Add to playback queue)
+ ★Panel.ShowConfigureMenu
+		右クリックメニューに "スクリプト..."(Configure...) を追加するならTrue
+ ○Panel.WorkDirectory
+		ワークディレクトリのパスを記述. 指定しなければ自動的に「import\EIKO\」が設定される
+		※フルパスではなく import\EIKO\ とだけ書いた場合, 「Foobarインストールフォルダ\import\EIKO\」 として扱われます
+
+		なお, ワークディレクトリには以下のファイルが入っている必要があります
+		Panel.WorkDirectory\
+		┣case.png	（Case.ActiveCaseMode がFalseの場合, または Case.CaseImagePath を設定した場合は省略可）
+		┣nocover.png	（Image.DefaultImagePath を設定した場合は省略可）
+		┣Next.png
+		┣Prev.png
+		┣Pause.png
+		┣Play.png
+		┗WSH_Cover_Mod_Properties_Help_ja.txt
+
+
+■謝辞━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Original Code by Maf
+ Thanks!
+
+■最後に━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+どう訳したらいいか分からなかった所は英文のままです
+不具合や要望など何かありましたらこちらから
+http://ashiato1.blog62.fc2.com/blog-entry-40.html
+Mod by Tomato
