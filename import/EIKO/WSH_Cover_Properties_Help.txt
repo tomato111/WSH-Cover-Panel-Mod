@@ -1,0 +1,76 @@
+- Features ---------------------------
+WSH Cover Panel is a WSH Mod Panel code configuration, which is based on foo_uie_wsh_panel_mod plug, used to display album art. It supports custom image path, multi-path, embedded images and images circulation functions, also comes with cache mechanism to improve performance.
+
+- Panel ------------------------------
+Button is used to control the image of the cycle.
+Panel can wheel to achieve "the one", "next" command.
+If you want to view WSH Cover panel detailed configuration code, hold down the Shift right click on the panel-Configure.
+
+- Right Menu -------------------------
+The previous options are not much to complain that the...
+
+Refresh image
+Reload the current path of the picture. Will not re-retrieve images.
+Clear Cache
+Clear all cached data in memory, including the picture cache and path cache. Once loaded or scanned images tend to be the path of a cache for a long time, if carried out during the image file changes, the panel does not update, then you can use this option, clear the cache, the picture will be re- retrieved and read.
+WSH Cover Preferences
+Into the Properties settings.
+
+- WSH Cover parameter ----------------
+Buttons (button optional)
+Display
+Whether to display control buttons
+Position
+Button, the display position. The range of 0-5, turn left on behalf of, the, the top right, bottom left, middle, bottom right.
+Cycle (image circle option)
+Animation (Animation Options)
+Duration
+The length of time switching animation. Milliseconds.
+Enable
+Whether the switch to open image animation. Animation process will be slightly higher CPU occupancy.
+RefreshInterval
+Animation refresh interval. Milliseconds.
+AutoPauseWhenFollowCursor
+Because no file playback and automatically follow the cursor mode, automatically switch to pause cycle status.
+CycleInWildCard
+Cycle wildcard match to all of the pictures.
+Enable
+Whether to open image circle.
+Paused
+Cycle is suspended. This variable is the right menu option that is completely equivalent, generally no need to set up here.
+Period
+Image switching interval. Milliseconds.
+Image (photo optional)
+DefaultImagePath
+Default image path. SourceFormat not found in the picture when you show this picture, this path is not available wildcard, use the title format, but will not update with the cursor or songs, can also be used an absolute path relative path, relative path starting at foobar2000 root directory.
+GroupFormat
+Grouping keywords. Title formatting script can be used. Group for the song files on packet, switch to the new file, the more this keyword, different groups are considered as new. Switch in the same group file, the image circle will not be interrupted or reset.
+ImageCacheCapacity
+Image cache capacity. Units of the number of sheets. Image scaling to fit panel is then cached, so this value should be combined with your panel size, if a larger panel, you should set the less, if smaller, you can set more. 0 or -1 to disable.
+InterpolationMode
+Image interpolation algorithm model. Used to adjust the picture to enlarge the quality, range 0-7.
+KeepAspectRatio
+Maintain the image ratio. This option shall be right-click menu - picture stretch of options, fully equivalent, usually no need to set up here.
+MaxFileSize
+Maximum image file size. Bytes. Than this size image will not be loaded.
+PathCacheCapacity
+Path cache capacity. The number of units group. Shall SourceFormat cache search results, a string of search results as a set. This panel only cache the string, so this value can be set larger. 0 or -1 to disable.
+SmoothingMode
+Image smoothing model. Used to adjust the picture reducing the quality of the range of 0-4.
+SourceFormat
+Image source path.
+Available wildcard can be used to format the title, can have path;
+Use of multi-path "||" separated;
+"<embed>" That extract embedded pictures.
+Panel calculation of this parameter will first title format, and then search "||" and "<>" segmentation of the location, so you can use, such as $if(%artist%,||E:\MusicPic\% artist%) this script.
+Stretch
+Does stretching picture. This option shall be right-click menu - picture stretch of options, fully equivalent, usually no need to set up here.
+Panel (Panel option)
+BackGroundColor
+Panel background color. RGB or RGBA support, said a comma-separated, for example: 200,150,100,80. Shall be no default.
+FollowCursor
+Follow the cursor mode. The range of 0-2, the option shall be right-click menu - follow the cursor mode options, fully equivalent, usually no need to set up here.
+Language
+Language selection panel. "cn" for the Chinese, "en" for English, "auto" to automatically determine the language of the core foobar, only support Chinese and English.
+WorkDirectory
+Working path. Now the main documentation to the designated location and position of the button images, buttons, images must be placed in the path of the Buttons folder. 
