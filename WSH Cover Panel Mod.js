@@ -2,7 +2,7 @@
 // ==PREPROCESSOR==
 // @name "WSH Cover Panel Mod"
 // @version "1.12"
-// @author "Tomato"
+// @author "tomato111"
 // @feature "dragdrop"
 // ==/PREPROCESSOR==
 //---------------------Original Code by Maf (http://bit.ly/qmiDCv) -------------------
