@@ -1,12 +1,12 @@
-﻿//--------------------code for foo_uie_wsh_mod v1.4.3 or higher ------------------
+﻿//-------------code for foo_uie_wsh_mod v1.4.3 or higher ------------------
 // ==PREPROCESSOR==
 // @name "WSH Cover Panel Mod"
 // @version "1.12"
 // @author "tomato111"
 // @feature "dragdrop"
 // ==/PREPROCESSOR==
-//---------------------Original Code by Maf (http://bit.ly/qmiDCv) -------------------
-//------------------------------------Mod by Tomato --------------------------------------
+//-------------Original Code by Jensen (http://dreamxis.themex.net/category/skin-ui/foobar) -------------------
+//-------------Mod by tomato111 --------------------------------------
 
 function RGBA(r, g, b, a) {
     var res = 0xff000000 | (r << 16) | (g << 8) | (b);
@@ -32,7 +32,7 @@ var Properties = new function () {
         // Create button's tooltip
         Tooltip: window.CreateTooltip(),
         // Always show "Configure..." on Mainmenu
-        ShowConfigureMenu: window.GetProperty("Panel.ShowConfigureMenu", false),
+        ShowConfigureMenu: window.GetProperty("Panel.ShowConfigureMenu", true),
         // Action on click left button, +Shift ,+Ctrl
         LeftButtonClick: window.GetProperty("Panel.LeftButtonClick", "0,0,0"),
         // Action on double click left button
@@ -144,7 +144,7 @@ var Properties = new function () {
     //---------------------------------------------------------------------
     this.Image = {
         // Separate paths by "||"; use "|||" to separate default images and other images, only can be used once; "<embed>" means embed cover, must be a individual path in sourceformat.
-        SourceFormat: window.GetProperty("Image.SourceFormat", "<embed>||$directory_path(%path%)\\cover.*||$directory_path(%path%)\\folder.*||$directory_path(%path%)\\front.*||$replace(%path%,%filename_ext%,)back.*||$if(%album%,$directory_path(%path%)\\%album%*.*)"),
+        SourceFormat: window.GetProperty("Image.SourceFormat", "<front>||<back>||$directory_path(%path%)\\*.*"),
         // In same group, if SourceFormat not changed, panel will not check any new files, and the images cycle will not be reset.
         GroupFormat: window.GetProperty("Image.GroupFormat", "%album%"),
         // Default image path.
@@ -172,6 +172,11 @@ var Properties = new function () {
         EmbedImageSubstitutedPath: window.GetProperty("Image.EmbedImageSubstitutedPath", "")
     };
 
+    //---------------------------------------------------------------------
+    this.Text = {
+        FilePath: window.GetProperty("Text.FilePath", "$directory_path(%path%)\\info.txt")
+    };
+        
     //---------------------------------------------------------------------
     this.Case = {
         // Enable case image.
@@ -244,7 +249,7 @@ var Properties = new function () {
     else if (this.Buttons.Position > 5)
         this.Buttons.Position = 5;
 
-} ();
+}();
 // Prototype =============================================
 Array.prototype.shuffle = function (from) { // 配列番号from以降をシャッフルする
     var i = this.length;
@@ -306,7 +311,7 @@ function value_boolean(s) {
     var bool = true;
     var arr = s.split(",");
     for (var i in arr)
-        if (arr.length < 3 || arr[i].match(/\D/) || arr[i] < 0 || arr[i] > 20) {
+        if (arr.length < 3 || arr[i].match(/\D/) || arr[i] < 0 || arr[i] > 21) {
             bool = false;
             break;
         }
@@ -498,6 +503,8 @@ var ImageLoader = new function (Prop) {
     // If path invalid or file corrupt, return nothing.
     this.GetImg = function (path, dstW, dstH, NoCache) {
         if (!path) return;
+        var ArtId = ["front", "back", "disc", "icon", "artist", ""];
+        var ArtIdRE = [/front>$/, /back>$/, /disc>$/, /icon>$/, /artist>$/];
         var imgobj;
         if (!NoCache && ImgsCache)
             imgobj = ImgsCache.SearchFor(path, dstW, dstH);
@@ -505,8 +512,12 @@ var ImageLoader = new function (Prop) {
         if (imgobj) {
             if (typeof (imgobj) != "object") imgobj = null; 	// Maybe it's a boolean value.
         } else {
-            if (path.charAt(0) == "<")		// Embed image.
-                imgobj = utils.GetAlbumArtEmbedded(path.substring(1, path.length - 1), 0);
+            if (path.charAt(0) == "<") {		// Embed image.
+                for (var i = 0; i < 5; i++)
+                    if (ArtIdRE[i].test(path))
+                        break;
+                imgobj = utils.GetAlbumArtEmbedded(path.substring(1, path.length - 1 - ArtId[i].length), i === 5 ? 0 : i);
+            }
             else
                 imgobj = gdi.Image(path);
 
@@ -531,7 +542,7 @@ var ImageLoader = new function (Prop) {
         ImgsCache && ImgsCache.Clear();
     };
 
-} (Properties);
+}(Properties);
 
 var GetImg = ImageLoader.GetImg;
 
@@ -621,8 +632,10 @@ var PathChecker = new function (Prop, ImgLoader) {
                 Array1.push(Array2[i]);
     };
 
-    // Calculate ImageSourceFormat, and replace <embed> with <rawpath>.
+    // Calculate ImageSourceFormat, and replace <embed> <front> <back> <disc> <icon> <artist> with <rawpath>. <embed> == <front>.
     var CalcPathFmt = function (pathfmt, metadb) {
+        var ArtId = ["front", "back", "disc", "icon", "artist"];
+        var ArtIdRE = [/<front>/gi, /<back>/gi, /<disc>/gi, /<icon>/gi, /<artist>/gi];
         var paths;
         if (fb.GetFocusItem()) {
             if (metadb)
@@ -630,6 +643,9 @@ var PathChecker = new function (Prop, ImgLoader) {
             else
                 paths = fb.TitleFormat(ImgSrcFmt).Eval();
             paths = paths.replace(/<embed>/gi, "<" + metadb.RawPath + ">");
+            for (var i = 0; i < ArtIdRE.length; i++) {
+                paths = paths.replace(ArtIdRE[i], "<" + metadb.RawPath + ArtId[i] + ">");
+            }
         } else if (!Prop.Image.DefaultImagePath) {
             paths = DefaultImgPath;
         } else
@@ -684,7 +700,7 @@ var PathChecker = new function (Prop, ImgLoader) {
                         if (!ValidFiles) {
                             ValidFiles = new Array;
                             var e = new Enumerator(FSO.GetFolder(foldername).Files);
-                            for (; !e.atEnd(); e.moveNext()) {
+                            for (; !e.atEnd() ; e.moveNext()) {
                                 var file = e.item();
                                 if (IsFilePropOK(file))
                                     ValidFiles.push(file.Path);
@@ -704,7 +720,7 @@ var PathChecker = new function (Prop, ImgLoader) {
                     } else {
                         exp = FSO.GetFileName(Path);
                         e = new Enumerator(FSO.GetFolder(foldername).Files);
-                        for (; !e.atEnd(); e.moveNext()) {
+                        for (; !e.atEnd() ; e.moveNext()) {
                             file = e.item();
                             if (IsFilePropOK(file) && utils.PathWildcardMatch(exp, file.Name)) {
                                 SearchResults.push(file.Path);
@@ -730,7 +746,7 @@ var PathChecker = new function (Prop, ImgLoader) {
         ImgSrcStr = "";
     };
 
-} (Properties, GetImg);
+}(Properties, GetImg);
 
 var GetImgPaths = PathChecker.GetImgPaths;
 
@@ -857,7 +873,7 @@ var Display = new function (Prop, ImgLoader) {
         if (Img = CurImage) {
             size = CurSize;
             if (opacity == 255 && CurRaw)
-            // This funtion is much more faster.
+                // This funtion is much more faster.
                 gr.GdiDrawBitmap(CurRaw, this.x + size.x, this.y + size.y, size.width, size.height, 0, 0, Img.width, Img.height);
             else
                 gr.DrawImage(Img, this.x + size.x, this.y + size.y, size.width, size.height, 0, 0, Img.width, Img.height, 0, opacity);
@@ -920,7 +936,7 @@ var Display = new function (Prop, ImgLoader) {
             NewSize = CalcNewImgSize(NewImage, this.width, this.height);
     };
 
-} (Properties, GetImg);
+}(Properties, GetImg);
 
 
 //====================================================
@@ -1077,7 +1093,7 @@ var Controller = new function (Prop, GetImgPaths, Dsp) {
             this.Next();
     };
 
-} (Properties, GetImgPaths, Display);
+}(Properties, GetImgPaths, Display);
 
 
 //====================================================
@@ -1301,7 +1317,7 @@ if (Properties.Buttons.Display && Properties.Cycle.Enable) {
             this.width = x - this.x;
         };
 
-    } (Properties, Controller);
+    }(Properties, Controller);
 
 } else
     Buttons = {};
@@ -1608,7 +1624,7 @@ var FuncMenu = new function (Prop, Ctrl, Dsp, Btns, ImgLoader, ImgFinder) {
         RebuildMenu();
     };
 
-} (Properties, Controller, Display, Buttons, ImageLoader, PathChecker);
+}(Properties, Controller, Display, Buttons, ImageLoader, PathChecker);
 
 
 //====================================================
@@ -1717,6 +1733,7 @@ function DeleteReservedImage() { // 削除実行
 }
 
 function ClickAction(c) {
+    var file;
     switch (c) {
         case '0':
             break;
@@ -1783,6 +1800,13 @@ function ClickAction(c) {
             break;
         case '20':
             DeleteReserve(Controller.CurrentPath);
+            break;
+        case '21':
+            fbtf = fb.GetFocusItem() && (Properties.Panel.FollowCursor == 2 || (Properties.Panel.FollowCursor == 1 && !fb.IsPlaying));
+            if (fbtf || fb.IsPlaying) {
+                file = fb.TitleFormat(Properties.Text.FilePath).EvalWithMetadb(fbtf ? fb.GetFocusItem() : fb.GetNowPlaying());
+                window.NotifyOthers("Lyric Show Modoki", file);
+            }
             break;
     }
 }

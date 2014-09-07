@@ -1,6 +1,6 @@
 ﻿■概要━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //This is a japanese help. I cannot make an english help. sorry.//
-WSH Cover Panel Mod は, "Album Covers buttons to switch" （http://bit.ly/qmiDCv）
+WSH Cover Panel Mod は, "WSH Cover Panel" by Jensen (http://dreamxis.themex.net/category/skin-ui/foobar に同梱）
 をさらに多機能にしようと改変した WSH Panel Mod 用スクリプトです.
 動作確認は以下のもので行っています.
 http://code.google.com/p/foo-wsh-panel-mod/downloads/list
@@ -73,6 +73,13 @@ http://code.google.com/p/foo-wsh-panel-mod/downloads/list
 --v1.11更新(2011/11/24)-----------------------------------------------
  ・RunCommandで"()"括弧を用いたTFが使えなかった不具合を修正
 	TF以外の括弧は'(' ')'のようにシングルクォートで括ってください.
+
+--v1.12更新(2014/09/07)-----------------------------------------------
+ ・フロントカバー以外の埋め込み画像も表示出来るようにした
+ 　<front>(<embed>と同じ), <back>, <disc>, <icon>, <artist>が新たに指定可能です.
+ ・Image.SourceFormat の初期値を変更
+ ・Text.FilePath に記述した情報を Lyric Show Modoki で表示出来るようにした (クリックアクションで21を指定)
+ ・original author を訂正
 ----------------------------------------------------------------------
 
 ■インストール━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -217,7 +224,7 @@ http://code.google.com/p/foo-wsh-panel-mod/downloads/list
  ○Image.SourceFormat	
 		表示画像のパスを指定. Title formatting の他にワイルドカードも使用可能
 		パスを複数指定する場合は"||"で区切って指定する
-		埋込み画像を表示したい場合は"<embed>"を指定する
+		埋込み画像を表示したい場合は"<embed>"(<front>でも可), "<back>", "<disc>", "<icon>", "<artist>" を指定する
 		パネルは始めにTFを評価してからセグメント記号"||" and "<>" を探すので,
 		例えば $if(%artist%,||E:\MusicPic\%artist%\*.*) というようなTF範囲内に"||"を含むスクリプトも使える
 		ex. <embed>||$directory_path(%path%)\folder.jpg||$replace(%path%,%filename_ext%,)back.*||D:\Music\ArtistPic\%artist%\*.*
@@ -266,6 +273,7 @@ http://code.google.com/p/foo-wsh-panel-mod/downloads/list
 			18: 次のプレイリストを開く (Next Playlist)
 			19: 前のプレイリストを開く (Previous Playrist)
 			20: 現在の画像を削除する (Delete Current Image) ※埋込み画像や読み取り専用は削除できません。
+			21: Text.FilePath に記述した情報を Lyric Show Modoki で表示
  ★Panel.LeftButtonDoubleClick
 		左ダブルクリック時の動作を指定. 記述は上記を参照. ※左クリックの動作も実行されるので注意
  ★Panel.MiddleButtonClick
@@ -295,10 +303,12 @@ http://code.google.com/p/foo-wsh-panel-mod/downloads/list
 		┣Pause.png
 		┣Play.png
 		┗WSH_Cover_Mod_Properties_Help_ja.txt
+ ★Text.FilePath
+		ここに記述した情報を Lyric Show Modoki (WSH Panel)に渡して表示する. クリックアクションで実行出来る
 
 
 ■謝辞━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Original Code by Maf
+ Original Code by Jensen
  Thanks!
 
 ■最後に━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
