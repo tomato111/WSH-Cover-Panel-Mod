@@ -1,7 +1,7 @@
 ﻿//-------------code for foo_uie_wsh_mod v1.4.3 or higher ------------------
 // ==PREPROCESSOR==
 // @name "WSH Cover Panel Mod"
-// @version "1.12"
+// @version "1.13"
 // @author "tomato111"
 // @feature "dragdrop"
 // ==/PREPROCESSOR==
@@ -22,7 +22,7 @@ var Properties = new function () {
         // 0: Never, 1: When not playing, 2: Always.
         FollowCursor: window.GetProperty("Panel.FollowCursor", 1),
         // Where the images folders in.
-        WorkDirectory: window.GetProperty("Panel.WorkDirectory", "import\\EIKO\\"),
+        WorkDirectory: fb.ProfilePath + "import\\EIKO\\",
         // "ja": Japanese, "en": English, default is LANG in user environment variable.
         lang: window.GetProperty("Panel.Language", "").toLowerCase(),
         // Path external image viewer.
@@ -66,9 +66,6 @@ var Properties = new function () {
         fb.ShowPopupMessage(this.Panel.lang == "ja" ? "FileSystemObject が作成出来ないため, WSH Cover Panel Mod は使用できません." : "Can not create File System Object (FSO), WSH Cover Panel Mod can't work.", "WSH Cover Panel Mod", 1);
         new ActiveXObject("Scripting.FileSystemObject"); 	// End scripts running.
     }
-
-    if (!this.Panel.FSO.FolderExists(this.Panel.WorkDirectory))
-        window.SetProperty("Panel.WorkDirectory", this.Panel.WorkDirectory = "import\\EIKO\\");
 
     if (!this.Panel.lang || this.Panel.lang != "ja" && this.Panel.lang != "en") {
         this.Panel.WshShell = new ActiveXObject("WScript.Shell");
@@ -147,9 +144,8 @@ var Properties = new function () {
         SourceFormat: window.GetProperty("Image.SourceFormat", "<front>||<back>||$directory_path(%path%)\\*.*"),
         // In same group, if SourceFormat not changed, panel will not check any new files, and the images cycle will not be reset.
         GroupFormat: window.GetProperty("Image.GroupFormat", "%album%"),
-        // Default image path.
+        // Default image path. // Default value is this.Panel.WorkDirectory + "nocover.png
         DefaultImagePath: window.GetProperty("Image.DefaultImagePath", ""),
-        //this.Panel.WorkDirectory + "nocover.png
         // File larger than this value will not be loaded. <=0 means no limit.
         MaxFileSize: window.GetProperty("Image.MaxFileSize", 5242880),
         // Keep images aspect ratio.
@@ -169,14 +165,16 @@ var Properties = new function () {
         // Margin between Panel and Image.
         AdjustMargin: window.GetProperty("Image.AdjustMargin", "6,6,6,6"),
         // Open substituted path when put "View With External Viewer" and <embed>.
-        EmbedImageSubstitutedPath: window.GetProperty("Image.EmbedImageSubstitutedPath", "")
+        EmbedImageSubstitutedPath: window.GetProperty("Image.EmbedImageSubstitutedPath", ""),
+        // Opacity
+        MaxOpacity: window.GetProperty("Image.MaxOpacity", 255)
     };
 
     //---------------------------------------------------------------------
     this.Text = {
         FilePath: window.GetProperty("Text.FilePath", "$directory_path(%path%)\\info.txt")
     };
-        
+
     //---------------------------------------------------------------------
     this.Case = {
         // Enable case image.
@@ -233,6 +231,9 @@ var Properties = new function () {
         this.Image.InterpolationMode = -1;
     else if (this.Image.InterpolationMode > 7)
         this.Image.InterpolationMode = 7;
+
+    if (typeof (this.Image.MaxOpacity) != "number" || this.Image.MaxOpacity < 11 || this.Image.MaxOpacity > 255)
+        window.SetProperty("Image.MaxOpacity", this.Image.MaxOpacity = 255);
 
     //---------------------------------------------------------------------
     this.Buttons = {
@@ -785,7 +786,7 @@ var Display = new function (Prop, ImgLoader) {
     var NewImage = null;
     var NewSize = null;
     var CanBeCreateRaw = true;
-    var opacity = 255;
+    var opacity = Prop.Image.MaxOpacity;
     var timer = null;
     //   var caseRaw = caseImg.CreateRawBitmap();
 
@@ -817,7 +818,7 @@ var Display = new function (Prop, ImgLoader) {
                 CurImage = NewImage;
                 //CurRaw = NewImage==DefaultImg ? DefaultRaw : (CanBeCreateRaw ? CurImage.CreateRawBitmap() : null);
                 CurSize = NewSize;
-                opacity = 255;
+                opacity = Prop.Image.MaxOpacity;
             }
 
             NewImage = newimg;
@@ -880,7 +881,7 @@ var Display = new function (Prop, ImgLoader) {
         }
         if (Img = NewImage) {
             size = NewSize;
-            gr.DrawImage(Img, this.x + size.x, this.y + size.y, size.width, size.height, 0, 0, Img.width, Img.height, 0, 255 - opacity);
+            gr.DrawImage(Img, this.x + size.x, this.y + size.y, size.width, size.height, 0, 0, Img.width, Img.height, 0, Prop.Image.MaxOpacity - opacity);
         }
         //ケースの描画 (画像データはgdi.Imageで取得(176行目), 座標(Artworkに合わせる時はsizeの結果を利用),X軸およびY軸リサイズ(同左),画像のどの範囲を切り取ってリサイズして描画するか(全体をリサイズ))
         if (CaseM) {
@@ -912,7 +913,7 @@ var Display = new function (Prop, ImgLoader) {
                 CurSize = NewSize;
                 NewImage = null;
                 NewSize = null;
-                opacity = 255;
+                opacity = Prop.Image.MaxOpacity;
                 window.KillTimer(timer);
                 timer.Dispose();
                 timer = null;

@@ -80,13 +80,27 @@ http://code.google.com/p/foo-wsh-panel-mod/downloads/list
  ・Image.SourceFormat の初期値を変更
  ・Text.FilePath に記述した情報を Lyric Show Modoki で表示出来るようにした (クリックアクションで21を指定)
  ・original author を訂正
-----------------------------------------------------------------------
+
+--v1.13更新(2015/02/15)-----------------------------------------------
+ ・インストール場所をプロファイルフォルダに変更（利便性の観点から）
+　 ※インストールの項を再度確認してインストールし直して下さい
+ ・Panel.WorkDirectory を廃止
+ ・画像の透明度を指定できる設定 Image.MaxOpacity を追加
+
 
 ■インストール━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ※ケース画像を使う場合は各自用意し、case.png としてimport\EIKO\フォルダへ入れてください
- 1. import フォルダを foobar2000 のインストールフォルダへ移動 (ex. C:\Program Files\foobar2000\import\～)
+ 1. importフォルダと WSH Cover Panel Mod.js を foobar2000 のプロファイルフォルダへ置く
+ 　 （foobar2000 のツールバーの 「File」 をShiftを押しながらクリックし、
+ 　　「Browse configuration folder」を選択して出てくるフォルダ） 
  2. Preferences -> Tools -> WSH Panel Mod で"Safe mode"のチェックを外す
- 3. WSH Panel Mod パネルで WSH Cover Panel Mod.txt をインポートするか中身を張り付ける
+ 3. WSH Panel Mod パネルのスクリプト欄を次のようにして「OK」を押す
+
+// ==PREPROCESSOR==
+// @name "WSH Cover Panel Mod"
+// @import "%fb2k_profile_path%WSH Cover Panel Mod.js"
+// @feature "dragdrop"
+// ==/PREPROCESSOR==
 
 
 ■操作━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -209,6 +223,8 @@ http://code.google.com/p/foo-wsh-panel-mod/downloads/list
  ○Image.MaxFileSize
 		画像の最大ファイルサイズを指定. 単位は[byte]. これ以上のファイルサイズのものは読み込まない
 		※初期値は5MB(5242880byte)です.　特定の画像が表示されない場合はファイルサイズを疑ってみてください
+ ★Image.MaxOpacity
+ 		画像の透明度を指定.（11～255）
  ○Image.PathCacheCapacity
 		Path cache capacity. The number of units group. Shall SourceFormat cache search results, a string of search results as a set. This panel only cache the string, so this value can be set larger. 0 or -1 to disable.
  ○Image.SmoothingMode
@@ -290,12 +306,15 @@ http://code.google.com/p/foo-wsh-panel-mod/downloads/list
 		(ex. Properties) (ex2. Utilities/Edit cuesheet) (ex3. Add to playback queue)
  ★Panel.ShowConfigureMenu
 		右クリックメニューに "スクリプト..."(Configure...) を追加するならTrue
- ○Panel.WorkDirectory
-		ワークディレクトリのパスを記述. 指定しなければ自動的に「import\EIKO\」が設定される
-		※フルパスではなく import\EIKO\ とだけ書いた場合, 「Foobarインストールフォルダ\import\EIKO\」 として扱われます
+ ★Text.FilePath
+		ここに記述した情報を Lyric Show Modoki (WSH Panel)に渡して表示する. クリックアクションで実行出来る
 
-		なお, ワークディレクトリには以下のファイルが入っている必要があります
-		Panel.WorkDirectory\
+
+
+■ファイル構成━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+WSH Cover Panel Mod.js
+import\EIKO\
 		┣case.png	（Case.ActiveCaseMode がFalseの場合, または Case.CaseImagePath を設定した場合は省略可）
 		┣nocover.png	（Image.DefaultImagePath を設定した場合は省略可）
 		┣Next.png
@@ -303,8 +322,6 @@ http://code.google.com/p/foo-wsh-panel-mod/downloads/list
 		┣Pause.png
 		┣Play.png
 		┗WSH_Cover_Mod_Properties_Help_ja.txt
- ★Text.FilePath
-		ここに記述した情報を Lyric Show Modoki (WSH Panel)に渡して表示する. クリックアクションで実行出来る
 
 
 ■謝辞━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
