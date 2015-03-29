@@ -1,7 +1,7 @@
 ﻿//-------------code for foo_uie_wsh_mod v1.4.3 or higher ------------------
 // ==PREPROCESSOR==
 // @name "WSH Cover Panel Mod"
-// @version "1.13"
+// @version "1.14"
 // @author "tomato111"
 // @feature "dragdrop"
 // ==/PREPROCESSOR==
@@ -252,6 +252,35 @@ var Properties = new function () {
 
 }();
 // Prototype =============================================
+
+//--timer--//
+Function.prototype.interval = function (time, callback) {
+    var __method = this;
+    var __callback = callback || function () { };
+    this.$$timerid$$ = window.setInterval(function () {
+        __method.apply(this, arguments);
+        __callback.apply(this, arguments);
+    }, time);
+};
+
+Function.prototype.timeout = function (time, callback) {
+    var __method = this;
+    var __callback = callback || function () { };
+    this.$$timerid$$ = window.setTimeout(function () {
+        __method.apply(this, arguments);
+        __callback.apply(this, arguments);
+    }, time);
+};
+
+Function.prototype.clearInterval = function () {
+    window.clearInterval(this.$$timerid$$);
+};
+
+Function.prototype.clearTimeout = function () {
+    window.clearTimeout(this.$$timerid$$);
+};
+
+//--shuffle array --//
 Array.prototype.shuffle = function (from) { // 配列番号from以降をシャッフルする
     var i = this.length;
     if (i - from < 2) return;
@@ -262,12 +291,12 @@ Array.prototype.shuffle = function (from) { // 配列番号from以降をシャ�
         this[j] = t;
     }
     return this;
-}
+};
 
 // Global ================================================
 var dragbgcolor = RGBA(193, 219, 252);
 var dragging = false;
-var DeleteReservedPath = null, DeleteTimer = null;
+var DeleteReservedPath = null;
 if (!Properties.Image.DefaultImagePath)
     var DefaultImgPath = Properties.Panel.WorkDirectory + "nocover.png";
 
@@ -787,7 +816,6 @@ var Display = new function (Prop, ImgLoader) {
     var NewSize = null;
     var CanBeCreateRaw = true;
     var opacity = Prop.Image.MaxOpacity;
-    var timer = null;
     //   var caseRaw = caseImg.CreateRawBitmap();
 
     if (ImgLoader)
@@ -823,7 +851,7 @@ var Display = new function (Prop, ImgLoader) {
 
             NewImage = newimg;
             NewSize = CalcNewImgSize(NewImage, this.width, this.height);
-            if (!timer) timer = window.CreateTimerInterval(RefreshInterval);
+            Display.startTimer(RefreshInterval);
         } else {
             CurImage = newimg;
             CurRaw = ImgPath ? (CanBeCreateRaw ? CurImage.CreateRawBitmap() : null) : DefaultRaw;
@@ -899,27 +927,23 @@ var Display = new function (Prop, ImgLoader) {
         }
     };
 
-    this.OnTimer = function (id) {
-        if (timer && id == timer.ID) {
-            if (opacity > 0) {
-                opacity = Math.max(opacity - step, 0);
-                if (Properties.Case.fixSizeMode)
-                    window.RepaintRect(this.x, this.y, this.width, this.height);
-                else
-                    window.Repaint();
-            } else {
-                CurImage = NewImage;
-                CurRaw = ImgPath ? (CanBeCreateRaw ? CurImage.CreateRawBitmap() : null) : DefaultRaw;
-                CurSize = NewSize;
-                NewImage = null;
-                NewSize = null;
-                opacity = Prop.Image.MaxOpacity;
-                window.KillTimer(timer);
-                timer.Dispose();
-                timer = null;
-                CollectGarbage(); 		// Release memory.
-                //window.RepaintRect(this.x, this.y, this.width, this.height);
-            }
+    this.OnTimer = function () {
+        if (opacity > 0) {
+            opacity = Math.max(opacity - step, 0);
+            if (Properties.Case.fixSizeMode)
+                window.RepaintRect(Display.x, Display.y, Display.width, Display.height);
+            else
+                window.Repaint();
+        } else {
+            CurImage = NewImage;
+            CurRaw = ImgPath ? (CanBeCreateRaw ? CurImage.CreateRawBitmap() : null) : DefaultRaw;
+            CurSize = NewSize;
+            NewImage = null;
+            NewSize = null;
+            opacity = Prop.Image.MaxOpacity;
+            Display.stopTimer();
+            CollectGarbage(); 		// Release memory.
+            //window.RepaintRect(this.x, this.y, this.width, this.height);
         }
     };
 
@@ -935,6 +959,15 @@ var Display = new function (Prop, ImgLoader) {
             CurSize = CalcNewImgSize(CurImage, this.width, this.height);
         if (NewImage)
             NewSize = CalcNewImgSize(NewImage, this.width, this.height);
+    };
+
+    this.startTimer = function (time) {
+        Display.OnTimer.clearInterval();
+        Display.OnTimer.interval(time);
+    };
+
+    this.stopTimer = function () {
+        Display.OnTimer.clearInterval();
     };
 
 }(Properties, GetImg);
@@ -954,7 +987,6 @@ var Controller = new function (Prop, GetImgPaths, Dsp) {
     this.CurImgPath = null;
     var CurImgIdx = 0;
     this.Paused = window.GetProperty("Cycle.Paused", !CycleEnabled);
-    var timer = null;
     var _this = this;
 
     var ChangeImg = function (arg, GroupChanged) {
@@ -984,22 +1016,28 @@ var Controller = new function (Prop, GetImgPaths, Dsp) {
 
         Controller.CurrentPath = _this.CurImgPath;
         Dsp.ChangeImage(_this.CurImgPath, GroupChanged);
-        DeleteReservedPath && CreateDeleteTimer();
+        DeleteReservedPath && DeleteReservedImage.timeout(Properties.Cycle.Animation.Duration + 100); // ファイルロック回避のため少し遅延させる
+    };
+
+    this.OnTimer = function () {
+        Controller.Next();
     };
 
     var ResetTimer = function () {
-        if (!timer) return;
-        window.KillTimer(timer);
-        timer.Dispose();
-        timer = window.CreateTimerInterval(CyclePeriod);
+        Controller.OnTimer.clearInterval();
+        Controller.OnTimer.interval(CyclePeriod);
         CollectGarbage(); 		// Release memory.
+    };
+
+    this.stopTimer = function () {
+        Controller.OnTimer.clearInterval();
     };
 
     this.Play = function () {
         this.Paused = false;
         window.SetProperty("Cycle.Paused", this.Paused);
         if (!this.CycleActivated) return;
-        if (!timer) timer = window.CreateTimerInterval(CyclePeriod);
+        ResetTimer(CyclePeriod);
     };
 
     this.Pause = function (p) {
@@ -1008,12 +1046,8 @@ var Controller = new function (Prop, GetImgPaths, Dsp) {
             window.SetProperty("Cycle.Paused", this.Paused);
         }
         if (!this.CycleActivated) return;
-        if (timer) {
-            window.KillTimer(timer);
-            timer.Dispose();
-            timer = null;
-            CollectGarbage(); 		// Release memory.
-        }
+        Controller.stopTimer();
+        CollectGarbage(); 		// Release memory.
     };
 
     this.Next = function () {
@@ -1071,12 +1105,8 @@ var Controller = new function (Prop, GetImgPaths, Dsp) {
     };
 
     this.OnStop = function (reason) {
-        if (timer) {
-            window.KillTimer(timer);
-            timer.Dispose();
-            timer = null;
-            CollectGarbage();
-        }
+        Controller.stopTimer();
+        CollectGarbage();
         if (reason <= 1)
             ChangeImg();
         if (reason != 2) {
@@ -1087,11 +1117,6 @@ var Controller = new function (Prop, GetImgPaths, Dsp) {
             CurImgIdx = 0;
             GroupStr = null;
         }
-    };
-
-    this.OnTimer = function (id) {
-        if (timer && id == timer.ID)
-            this.Next();
     };
 
 }(Properties, GetImgPaths, Display);
@@ -1113,7 +1138,6 @@ if (Properties.Buttons.Display && Properties.Cycle.Enable) {
         var defaultOp = 150;
         var hbtn = null;
         var dbtn = null;
-        var timer = null;
         var RefreshInterval = 50;
         var step = 40;
         var dstOp = 0;
@@ -1213,7 +1237,16 @@ if (Properties.Buttons.Display && Properties.Cycle.Enable) {
         var Fading = function (dstop) {
             if (dstOp == dstop) return;
             dstOp = dstop;
-            if (!timer) timer = window.CreateTimerInterval(RefreshInterval);
+            Buttons.startTimer(RefreshInterval);
+        };
+
+        this.startTimer = function (time) {
+            Buttons.OnTimer.clearInterval();
+            Buttons.OnTimer.interval(time);
+        };
+
+        this.stopTimer = function () {
+            Buttons.OnTimer.clearInterval();
         };
 
         this.OnPaint = function (gr) {
@@ -1283,20 +1316,16 @@ if (Properties.Buttons.Display && Properties.Cycle.Enable) {
         };
 
         this.OnTimer = function (id) {
-            if (timer && id == timer.ID) {
-                if (opacity == dstOp) {
-                    window.KillTimer(timer);
-                    timer.Dispose();
-                    timer = null;
-                    CollectGarbage(); 		// Release memory.
-                    //window.RepaintRect(this.x, this.y, this.width, this.height);
-                } else {
-                    if (opacity < dstOp)
-                        opacity = Math.min(opacity + step, dstOp);
-                    else
-                        opacity = Math.max(opacity - step, dstOp);
-                    window.RepaintRect(this.x, this.y, this.width, this.height);
-                }
+            if (opacity == dstOp) {
+                Buttons.stopTimer();
+                CollectGarbage(); 		// Release memory.
+                //window.RepaintRect(this.x, this.y, this.width, this.height);
+            } else {
+                if (opacity < dstOp)
+                    opacity = Math.min(opacity + step, dstOp);
+                else
+                    opacity = Math.max(opacity - step, dstOp);
+                window.RepaintRect(Buttons.x, Buttons.y, Buttons.width, Buttons.height);
             }
         };
 
@@ -1335,7 +1364,6 @@ var FuncMenu = new function (Prop, Ctrl, Dsp, Btns, ImgLoader, ImgFinder) {
     var MF_UNCHECKED = 0x00000000;
     var MF_CHECKED = 0x00000008;
     var MF_STRING = 0x00000000;
-    var MF_POPUP = 0x00000010;
     var MF_RIGHTJUSTIFY = 0x00004000;
 
     var lang = Prop.Panel.lang;
@@ -1344,16 +1372,33 @@ var FuncMenu = new function (Prop, Ctrl, Dsp, Btns, ImgLoader, ImgFinder) {
 
     var BuildMenu = function (items) {
         var menu = window.CreatePopupMenu();
-        var mf, id, radio;
+        var submenu = [];
+        var mf, id, radio, subitem, start_id;
         for (var i = 0; i < items.length; i++) {
             mf = items[i].Flag || MF_STRING;
-            id = items[i].ID || ItemID++;
-            menu.AppendMenuItem(mf, id, items[i].Caption);
-            if (i == items.Radio)
-                radio = id;
-            ItemList[id] = items[i];
+
+            if (items[i].Sub) {
+                submenu[i] = window.CreatePopupMenu();
+                submenu[i].AppendTo(menu, MF_STRING, items[i].Caption);
+                subitem = items[i].Sub;
+                start_id = ItemID;
+
+                for (var j = 0; j < subitem.length; j++) {
+                    id = ItemID++;
+                    submenu[i].AppendMenuItem(subitem[j].Flag, id, subitem[j].Caption);
+                    ItemList[id] = subitem[j];
+                }
+
+                (typeof items[i].Radio == "number") && submenu[i].CheckMenuRadioItem(start_id, id, start_id + items[i].Radio);
+
+            }
+            else {
+                id = ItemID++;
+                menu.AppendMenuItem(mf, id, items[i].Caption);
+                ItemList[id] = items[i];
+            }
         }
-        radio && menu.CheckMenuRadioItem(1, items.length, radio);
+
         return menu;
     };
 
@@ -1365,7 +1410,7 @@ var FuncMenu = new function (Prop, Ctrl, Dsp, Btns, ImgLoader, ImgFinder) {
 		        if (Prop.Panel.FollowCursor == 1) return;
 		        Prop.Panel.FollowCursor = 1;
 		        window.SetProperty("Panel.FollowCursor", 1);
-		        Menu_FC_Items.Radio = 0;
+		        Menu_SubItem_FC.Radio = 0;
 		        if (fb.IsPlaying)
 		            on_playback_new_track(fb.GetNowPlaying());
 		        else
@@ -1379,7 +1424,7 @@ var FuncMenu = new function (Prop, Ctrl, Dsp, Btns, ImgLoader, ImgFinder) {
 		        if (Prop.Panel.FollowCursor == 2) return;
 		        Prop.Panel.FollowCursor = 2;
 		        window.SetProperty("Panel.FollowCursor", 2);
-		        Menu_FC_Items.Radio = 1;
+		        Menu_SubItem_FC.Radio = 1;
 		        on_item_focus_change(fb.GetFocusItem());
 		        RebuildMenu();
 		    }
@@ -1390,7 +1435,7 @@ var FuncMenu = new function (Prop, Ctrl, Dsp, Btns, ImgLoader, ImgFinder) {
 		        if (Prop.Panel.FollowCursor == 0) return;
 		        Prop.Panel.FollowCursor = 0;
 		        window.SetProperty("Panel.FollowCursor", 0);
-		        Menu_FC_Items.Radio = 2;
+		        Menu_SubItem_FC.Radio = 2;
 		        if (fb.IsPlaying)
 		            on_playback_new_track(fb.GetNowPlaying());
 		        else
@@ -1399,12 +1444,11 @@ var FuncMenu = new function (Prop, Ctrl, Dsp, Btns, ImgLoader, ImgFinder) {
 		    }
 		}
 	);
-    var fc = Prop.Panel.FollowCursor;
-    Menu_FC_Items.Radio = fc == 1 ? 0 : fc == 2 ? 1 : fc == 0 ? 2 : null;
+
     var Menu_SubItem_FC = {
-        Flag: MF_POPUP,
         Caption: lang == "ja" ? "カーソルを追従" : "Follow Cursor",
-        ID: null
+        Sub: Menu_FC_Items,
+        Radio: Prop.Panel.FollowCursor == 1 ? 0 : Prop.Panel.FollowCursor == 2 ? 1 : Prop.Panel.FollowCursor == 0 ? 2 : null
     }
 
     // Submenu: Image Stretching ----------------------
@@ -1433,9 +1477,8 @@ var FuncMenu = new function (Prop, Ctrl, Dsp, Btns, ImgLoader, ImgFinder) {
 		}
 	);
     var Menu_SubItem_IS = {
-        Flag: MF_POPUP,
         Caption: lang == "ja" ? "画像の伸張" : "Image Stretching",
-        ID: null
+        Sub: Menu_IS_Items,
     }
 
     // Main menu --------------------------------
@@ -1586,10 +1629,6 @@ var FuncMenu = new function (Prop, Ctrl, Dsp, Btns, ImgLoader, ImgFinder) {
     var RebuildMenu = function () {
         ItemList = {};
         ItemID = 1;
-        Menu_FC = BuildMenu(Menu_FC_Items);
-        Menu_SubItem_FC.ID = Menu_FC.ID;
-        Menu_IS = BuildMenu(Menu_IS_Items);
-        Menu_SubItem_IS.ID = Menu_IS.ID;
         Menu = BuildMenu(Menu_Items);
     };
 
@@ -1706,19 +1745,14 @@ function DeleteReserve(path) { // 削除予約
     }
 }
 
-function CreateDeleteTimer() { // ファイルロック回避タイマー
-    DeleteTimer = window.CreateTimerTimeout(Properties.Cycle.Animation.Duration + 100);
-}
-
-function DeleteReservedImage() { // 削除実行
+function DeleteReservedImage() { // 削除予約されたファイルをゴミ箱に移動する // ファイルロックを確実に解除するために、プロトタイプのタイマーであるtimeoutメソッドを使って呼ぶ出す
     try {
-        Properties.Panel.FSO.DeleteFile(DeleteReservedPath, false);
+        var sa = new ActiveXObject("Shell.Application");
+        var recycle_bin_folder = sa.Namespace(10);
+        recycle_bin_folder.MoveHere(DeleteReservedPath);
     } catch (e) {
         Properties.Panel.WshShell.Popup(Properties.Panel.lang == "ja" ? "ファイルがロックされているか、読み取り専用のため\n削除できません。" : "Can't delete it because image is locked or read only", 0, "情報", 64);
     }
-    window.KillTimer(DeleteTimer);
-    DeleteTimer.Dispose();
-    DeleteTimer = null;
     DeleteReservedPath = null;
     !e && FuncMenu.ClearCache();
     CollectGarbage();
@@ -1859,6 +1893,8 @@ function on_drag_leave() {
 function on_drag_drop(action) {
     if (Properties.Panel.DragDropPlaylistName == "auto")
         var playlist_name = "";
+    else if (plman.PlaylistItemCount(plman.ActivePlaylist) === 0) // この場合はTFを評価できないのでそのままの文字列を使う
+        playlist_name = Properties.Panel.DragDropPlaylistName;
     else
         playlist_name = fb.TitleFormat(Properties.Panel.DragDropPlaylistName).EvalWithMetadb(fb.GetFocusItem());
     var idx = -1;
@@ -1974,13 +2010,6 @@ function on_mouse_wheel(delta) {
         Controller && Controller.Previous();
     else
         Controller && Controller.Next();
-}
-//---------------------------------------------------------
-function on_timer(id) {
-    Controller.OnTimer && Controller.OnTimer(id);
-    Display.OnTimer && Display.OnTimer(id);
-    Buttons.OnTimer && Buttons.OnTimer(id);
-    DeleteTimer && (id == DeleteTimer.ID) && DeleteReservedImage();
 }
 
 //EOF
