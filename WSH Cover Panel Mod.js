@@ -1,7 +1,7 @@
 ﻿//-------------code for foo_uie_wsh_mod v1.4.3 or higher ------------------
 // ==PREPROCESSOR==
 // @name "WSH Cover Panel Mod"
-// @version "1.14"
+// @version "1.15"
 // @author "tomato111"
 // @feature "dragdrop"
 // ==/PREPROCESSOR==
@@ -1717,13 +1717,13 @@ function FuncCommand(path) {
 }
 
 function Playlist_jump(d) {
-    var pn = fb.ActivePlaylist + d;
-    if (pn >= fb.PlaylistCount)
-        fb.ActivePlaylist = 0;
+    var pn = plman.ActivePlaylist + d;
+    if (pn >= plman.PlaylistCount)
+        plman.ActivePlaylist = 0;
     else if (pn < 0)
-        fb.ActivePlaylist = fb.PlaylistCount - 1;
+        plman.ActivePlaylist = plman.PlaylistCount - 1;
     else
-        fb.ActivePlaylist = pn;
+        plman.ActivePlaylist = pn;
 }
 
 function DeleteReserve(path) { // 削除予約
@@ -1900,15 +1900,15 @@ function on_drag_drop(action) {
     var idx = -1;
 
     // Find the playlist first.
-    for (var i = 0; i < fb.PlaylistCount; ++i) {
-        if (fb.GetPlaylistName(i) == playlist_name) {
+    for (var i = 0; i < plman.PlaylistCount; ++i) {
+        if (plman.GetPlaylistName(i) == playlist_name) {
             idx = i;
             break;
         }
     }
     // If not found, then create one.
     if (idx == -1)
-        idx = fb.CreatePlaylist(fb.PlaylistCount, playlist_name);
+        idx = plman.CreatePlaylist(plman.PlaylistCount, playlist_name);
 
     // dropイベントが発生した場合、on_drag_leave関数は呼ばれないため、以下2行の記述が必要.
     dragging = false;
